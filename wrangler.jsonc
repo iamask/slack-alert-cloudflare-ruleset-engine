@@ -1,0 +1,31 @@
+/**
+ * For more details on how to configure Wrangler, refer to:
+ * https://developers.cloudflare.com/workers/wrangler/configuration/
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "alert-action-automation",
+	"main": "src/index.js",
+	"compatibility_date": "2025-06-10",
+	"observability": {
+		"enabled": true
+	},
+	"kv_namespaces": [
+		{
+		  "binding": "ALERTS_KV",
+		  "id": "13efac877fd742638f522179e0c501e9"
+		}
+	  ],
+	  "ai": {
+    "binding": "AI"
+  },
+  "vars": {
+    "AUTO_BLOCK": true,
+  },
+  "triggers": {
+	"crons": [
+	  "*/30 * * * *"
+	]
+  }
+		// "services": [{ "binding": "MY_SERVICE", "service": "my-service" }]
+}
