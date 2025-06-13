@@ -27,7 +27,7 @@ The following environment variables need to be configured in your Cloudflare Wor
 - `SLACK_WEBHOOK_URL`: Slack webhook URL for alerts
 - `AUTO_BLOCK`: Boolean flag to enable/disable automatic blocking (true/false)
 
-![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert.png)
+![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
 
 ## Setup
 
@@ -68,31 +68,6 @@ The worker logs important events and actions:
 - Error conditions and failures
 - Top JA4 fingerprints detected
 
-## Response Format
+## Alert Format
 
-The worker returns JSON responses with the following structure:
-
-```json
-{
-    "status": "success|error",
-    "message": "Status message",
-    "auto_block_enabled": true|false,
-    "top_ja4s": [
-        {
-            "ja4": "fingerprint",
-            "count": number
-        }
-    ],
-    "blocking_result": {
-        // Blocking operation result
-    }
-}
-```
-
-## License
-
-[Add your license information here]
-
-## Contributing
-
-[Add contribution guidelines if applicable]
+![Screenshot](https://r2.zxc.co.in/git_readme/alert-slack.png)
