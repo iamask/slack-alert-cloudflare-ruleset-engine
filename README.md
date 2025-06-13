@@ -27,6 +27,10 @@ The following environment variables need to be configured in your Cloudflare Wor
 - `SLACK_WEBHOOK_URL`: Slack webhook URL for alerts
 - `AUTO_BLOCK`: Boolean flag to enable/disable automatic blocking (true/false)
 
+or Update in the dashboard
+
+![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert.png)
+
 ## Setup
 
 1. Clone this repository
