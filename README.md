@@ -28,7 +28,7 @@ The following environment variables need to be configured in your Cloudflare Wor
 - `AUTO_BLOCK`: Boolean flag to enable/disable automatic blocking (true/false)
 
 or Update in the dashboard
-
+![Webhook](https://r2.zxc.co.in/git_readme/ai-alert.png)
 ![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert.png)
 
 ## Setup
