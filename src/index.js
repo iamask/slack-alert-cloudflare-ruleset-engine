@@ -1,8 +1,9 @@
 // This Block functionality is controlled by the AUTO_BLOCK flag 
-// Setup flag to true and Setup Slack URL in wrangler.jsonc or dashboard > 'Variables and Secrets' to enable automatic blocking of JA4s
+// Setup AUTO_BLOCK  flag to true and Setup Slack URL in wrangler.jsonc or dashboard > 'Variables and Secrets' to enable automatic blocking of JA4s
 
 
-//ARL  Ruleset ID
+//Substitue ruleset ID with your own
+//https://developers.cloudflare.com/ruleset-engine/basic-operations/view-rulesets/#view-available-rulesets
 const rlrulesetId = "890ec27b8b5642d3b548d5fcc557e7d5";
  
 
