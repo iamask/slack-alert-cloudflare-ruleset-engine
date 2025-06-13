@@ -36,7 +36,7 @@ or Update in the dashboard
 1. Clone this repository
 2. Install Wrangler CLI if you haven't already:
    ```bash
-   npm install -g wrangler
+   npm i -D wrangler@latest
    ```
 3. Configure your environment variables in `wrangler.jsonc` or through the Cloudflare dashboard
 4. Deploy the worker:
