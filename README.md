@@ -19,15 +19,13 @@ A Cloudflare Worker that monitors DDoS events and automatically blocks malicious
 
 ## Environment Variables
 
-The following environment variables need to be configured in your Cloudflare Workers dashboard or `wrangler.jsonc`:
+The following environment variables need to be configured in your Cloudflare Workers dashboard or `wrangler.jsonc` and [Secrets](https://developers.cloudflare.com/workers/configuration/environment-variables/#compare-secrets-and-environment-variables):
 
 - `API_TOKEN`: Your Cloudflare API token
 - `ZONE_TAG`: Your Cloudflare zone tag
 - `ZONE_ID`: Your Cloudflare zone ID
 - `SLACK_WEBHOOK_URL`: Slack webhook URL for alerts
 - `AUTO_BLOCK`: Boolean flag to enable/disable automatic blocking (true/false)
-
-or Update in the dashboard
 
 ![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert.png)
 
