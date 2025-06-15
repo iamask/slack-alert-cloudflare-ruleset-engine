@@ -150,9 +150,7 @@ export default {
             console.log(`Found ${events.length} events`);
 
             if (events.length === 0) {
-                return new Response(JSON.stringify({ status: 'success', message: 'No events found' }), {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                console.log(JSON.stringify({ status: 'success', message: 'No events found' }));
             }
 
             // Check if we need to process these events
@@ -160,17 +158,17 @@ export default {
             const currentHash = getSimpleHash(events);
             
             if (previousHash === currentHash) {
-                return new Response(JSON.stringify({ status: 'success', message: 'No new events' }), {
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                console.log(JSON.stringify({ status: 'success', message: 'No new events' }));
             }
 
             // Process new events
             await env.ALERTS_KV.put(getStateKey(env.RULESET_ID), currentHash);
+			console.log('New events processed');
             
             try {
                 await sendAlert(events, env.ZONE_TAG, env);
             } catch (error) {
+                console.error('Failed to send alert:', error);
                 // Continue processing even if alert fails
             }
 
@@ -195,7 +193,7 @@ export default {
             console.log('Top JA4s found:', topJa4s);
 
             let blockingResult = null;
-            // Only block if AUTO_BLOCK is enabled
+            // Only block if AUTO_BLOCK is enabled and topJa4s is not empty
             if (AUTO_BLOCK && topJa4s.length > 0) {
                 console.log('AUTO_BLOCK is enabled - proceeding with blocking');
                 const ja4List = topJa4s.map(item => item.ja4);
