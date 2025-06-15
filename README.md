@@ -18,6 +18,8 @@ A Cloudflare Worker that monitors Security events/ Rulesets and automatically bl
 
 Simply click the "Deploy to Cloudflare" button above to deploy this worker to your Cloudflare account.
 
+Update Environments and secrets ![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
+
 ### Option 2: Manual Deployment
 
 If you prefer to deploy manually:
@@ -32,7 +34,29 @@ If you prefer to deploy manually:
    npm i -D wrangler@latest
    ```
 3. Configure your environment variables in `wrangler.jsonc` and [Secrets](https://developers.cloudflare.com/workers/configuration/environment-variables/#compare-secrets-and-environment-variables) or through the Cloudflare dashboard
-4. Deploy the worker:
+4. Update `wrangler.jsonc` with your configuration:
+   ```jsonc
+   {
+   	"name": "alert-action-automation",
+   	"main": "src/index.js",
+   	"compatibility_date": "2025-06-10",
+   	"kv_namespaces": [
+   		{
+   			"binding": "ALERTS_KV",
+   			"id": "your-kv-namespace-id" // Create KV namespace in Cloudflare dashboard
+   		}
+   	],
+   	"vars": {
+   		"AUTO_BLOCK": false // Set to true to enable automatic blocking
+   	},
+   	"triggers": {
+   		"crons": [
+   			"*/30 * * * *" // Runs every 30 minutes
+   		]
+   	}
+   }
+   ```
+5. Deploy the worker:
    ```bash
    wrangler deploy
    ```
@@ -63,8 +87,6 @@ MIT License - feel free to use this code for your own projects.
 - Cloudflare Workers subscription
 - Slack workspace with webhook URL
 - Cloudflare API Token with appropriate permissions
-
-![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
 
 ## How It Works
 
