@@ -1,15 +1,6 @@
-// This Block functionality is controlled by the AUTO_BLOCK flag 
-// Setup AUTO_BLOCK  flag to true and Setup Slack URL in wrangler.jsonc or dashboard > 'Variables and Secrets' to enable automatic blocking of JA4s
+// update variables in .env.vars file and wrangler.jsonc. or dashboard > 'Variables and Secrets'
+// The Block functionality is controlled by the AUTO_BLOCK flag 
 
-
-//Substitue ruleset ID with your own
-//https://developers.cloudflare.com/ruleset-engine/basic-operations/view-rulesets/#view-available-rulesets
-const rlrulesetId = "890ec27b8b5642d3b548d5fcc557e7d5";
- 
-
- 
-
- 
 // Get time window for last 24 hours
 const getTimeWindow = () => {
     const now = new Date();
@@ -19,37 +10,64 @@ const getTimeWindow = () => {
         end: now.toISOString()
     };
 };
- 
+
+// Validate required environment variables
+const validateEnv = (env) => {
+    const requiredVars = {
+        'API_TOKEN': 'Cloudflare API Token',
+        'ZONE_TAG': 'Zone Tag',
+        'ZONE_ID': 'Zone ID',
+        'RULESET_ID': 'Ruleset ID for monitoring',
+        'SLACK_WEBHOOK_URL': 'Slack Webhook URL'
+    };
+
+    const missingVars = [];
+    for (const [varName, description] of Object.entries(requiredVars)) {
+        if (!env[varName]) {
+            missingVars.push(`${varName} (${description})`);
+        }
+    }
+
+    // Validate AUTO_BLOCK and CUSTOM_RULE_ID together
+    if (env.AUTO_BLOCK === true && !env.CUSTOM_RULE_ID) {
+        missingVars.push('CUSTOM_RULE_ID (Required when AUTO_BLOCK is enabled)');
+    }
+
+    if (missingVars.length > 0) {
+        throw new Error(`Missing required environment variables:${missingVars.join('\n')}`);
+    }
+    console.log('Environment validation completed successfully');
+};
+
 // KV Key for state comparison
 const getStateKey = (rulesetId) => `state_${rulesetId}`;
- 
+
 // Simple hash function for state comparison
 const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 32);
- 
+
 // Send alert to Slack
 const sendAlert = async (events, zoneTag, env) => {
     const message = {
-        text: `🚨 DDoS Events Detected on ${zoneTag} 🚨`,
+        text: `🚨 DDoS Events Detected on ${zoneTag}`,
         blocks: [
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*🚨 DDoS Events Detected on ${zoneTag} | Time: ${new Date().toISOString()}*`
+                    text: `🚨 DDoS Events Detected on ${zoneTag}`
                 }
             },
             {
                 type: "section",
                 text: {
                     type: "mrkdwn",
-                    text: `*Events Data:*\n\`\`\`${JSON.stringify(events, null, 2)}\`\`\``
+                    text: JSON.stringify(events, null, 2)
                 }
             }
         ]
     };
 
     try {
-        console.log('Sending alert to Slack with payload:', JSON.stringify(message, null, 2));
         const response = await fetch(env.SLACK_WEBHOOK_URL, {
             method: 'POST',
             headers: {
@@ -60,60 +78,61 @@ const sendAlert = async (events, zoneTag, env) => {
 
         if (!response.ok) {
             const responseText = await response.text();
+           // console.error('Slack API error response:', responseText);
             throw new Error(`Slack webhook failed with status: ${response.status}, response: ${responseText}`);
         }
         console.log('Alert sent successfully to Slack');
     } catch (error) {
         console.error('Failed to send alert to Slack:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
         throw error; // Re-throw to handle in the calling function
     }
 };
- 
+
 export default {
     async scheduled(request, env, ctx) {
-        // AUTO_BLOCK is passed as a boolean from wrangler.jsonc
-        const AUTO_BLOCK = env.AUTO_BLOCK;  
+        console.log('Worker scheduled event triggered at:', new Date().toISOString());
+        console.log('Environment variables available:', Object.keys(env).join(', '));
         
-        // Get ruleset ID from environment variables
-		// RULE_ID is optional, if not provided, all rules within the ruleset will be checked
-        if (!env.RULESET_ID) {
-            throw new Error('RULESET_ID environment variable is not configured');
-        }
-
-        const timeWindow = getTimeWindow();
-        const query = `
-            query Viewer {
-                viewer {
-                    zones(filter: { zoneTag: "${env.ZONE_TAG}" }, limit: 1) {
-                        zoneTag
-                        firewallEventsAdaptiveGroups(
-                            filter: {
-                                datetime_geq: "${timeWindow.start}",
-                                datetime_leq: "${timeWindow.end}"
-                                ${env.RULE_ID ? `ruleId: "${env.RULE_ID}",` : ''}
-                                rulesetId: "${env.RULESET_ID}"
-                            }
-                            orderBy: [count_DESC]
-                            limit: 10
-                        ) {
-                            count
-                            dimensions {
-                                description
-								clientCountryName
-								clientAsn
-                                clientIP
-								ja4
-								clientRequestPath
-								clientRequestHTTPHost
-								botDetectionTags
+        try {
+            validateEnv(env);
+            const AUTO_BLOCK = env.AUTO_BLOCK === true;
+            const timeWindow = getTimeWindow();
+            const query = `
+                query Viewer {
+                    viewer {
+                        zones(filter: { zoneTag: "${env.ZONE_TAG}" }, limit: 1) {
+                            zoneTag
+                            firewallEventsAdaptiveGroups(
+                                filter: {
+                                    datetime_geq: "${timeWindow.start}",
+                                    datetime_leq: "${timeWindow.end}"
+                                    ${env.RULE_ID ? `ruleId_like: "${env.RULE_ID}",` : ''}
+                                    rulesetId_like: "${env.RULESET_ID}"
+                                }
+                                orderBy: [count_DESC]
+                                limit: 3
+                            ) {
+                                count
+                                dimensions {
+                                    description
+                                    clientCountryName
+                                    clientAsn
+                                    clientIP
+                                    ja4
+                                    clientRequestPath
+                                    clientRequestHTTPHost
+                                    botDetectionTags
+                                }
                             }
                         }
                     }
                 }
-            }
-        `;
+            `;
 
-        try {
             // Get events from GraphQL
             const response = await fetch('https://api.cloudflare.com/client/v4/graphql', {
                 method: 'POST',
@@ -124,8 +143,20 @@ export default {
                 body: JSON.stringify({ query }),
             });
 
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`GraphQL API request failed with status ${response.status}: ${errorText}`);
+            }
+
             const data = await response.json();
+            console.log('GraphQL response received');
+            
+            if (data.errors) {
+                throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
+            }
+
             const events = data.data?.viewer?.zones[0]?.firewallEventsAdaptiveGroups || [];
+            console.log(`Found ${events.length} events`);
 
             if (events.length === 0) {
                 return new Response(JSON.stringify({ status: 'success', message: 'No events found' }), {
@@ -147,11 +178,8 @@ export default {
             await env.ALERTS_KV.put(getStateKey(env.RULESET_ID), currentHash);
             
             try {
-                console.log('Attempting to send alert...');
                 await sendAlert(events, env.ZONE_TAG, env);
-                console.log('Alert sent successfully');
             } catch (error) {
-                console.error('Failed to send alert:', error);
                 // Continue processing even if alert fails
             }
 
@@ -224,7 +252,7 @@ export default {
 
             console.log(JSON.stringify({
                 status: 'success',
-                message: 'Events processed',
+               // message: 'Events processed',
                 auto_block_enabled: AUTO_BLOCK,
                 top_ja4s: topJa4s,
                 blocking_result: blockingResult,
@@ -234,10 +262,9 @@ export default {
                         total_requests: topJa4s.reduce((sum, item) => sum + item.count, 0)
                     }
                 })
-            }), );
+            }));
 
         } catch (error) {
-            console.error('Error:', error);
             console.log(JSON.stringify({
                 status: 'error',
                 message: error.message
