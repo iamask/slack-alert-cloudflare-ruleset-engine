@@ -26,6 +26,9 @@ The following environment variables need to be configured in your Cloudflare Wor
 - `ZONE_ID`: Your Cloudflare zone ID
 - `SLACK_WEBHOOK_URL`: Slack webhook URL for alerts
 - `AUTO_BLOCK`: Boolean flag to enable/disable automatic blocking (true/false)
+- `RULESET_ID`: Your Cloudflare Ruleset ID for DDoS monitoring (Required)
+- `RULE_ID`: Optional specific rule ID to monitor within the ruleset
+- `CUSTOM_RULE_ID`: Ruleset ID where blocking rules will be created (Required if AUTO_BLOCK is enabled)
 
 ![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
 

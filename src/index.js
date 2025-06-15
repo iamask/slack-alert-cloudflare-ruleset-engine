@@ -74,6 +74,12 @@ export default {
         // AUTO_BLOCK is passed as a boolean from wrangler.jsonc
         const AUTO_BLOCK = env.AUTO_BLOCK;  
         
+        // Get ruleset ID from environment variables
+		// RULE_ID is optional, if not provided, all rules within the ruleset will be checked
+        if (!env.RULESET_ID) {
+            throw new Error('RULESET_ID environment variable is not configured');
+        }
+
         const timeWindow = getTimeWindow();
         const query = `
             query Viewer {
@@ -84,7 +90,8 @@ export default {
                             filter: {
                                 datetime_geq: "${timeWindow.start}",
                                 datetime_leq: "${timeWindow.end}"
-								rulesetId_like: "efb7b8c949ac4650a09736fc376e9aee"
+                                ${env.RULE_ID ? `ruleId: "${env.RULE_ID}",` : ''}
+                                rulesetId: "${env.RULESET_ID}"
                             }
                             orderBy: [count_DESC]
                             limit: 10
@@ -127,7 +134,7 @@ export default {
             }
 
             // Check if we need to process these events
-            const previousHash = await env.ALERTS_KV.get(getStateKey(rlrulesetId));
+            const previousHash = await env.ALERTS_KV.get(getStateKey(env.RULESET_ID));
             const currentHash = getSimpleHash(events);
             
             if (previousHash === currentHash) {
@@ -137,7 +144,7 @@ export default {
             }
 
             // Process new events
-            await env.ALERTS_KV.put(getStateKey(rlrulesetId), currentHash);
+            await env.ALERTS_KV.put(getStateKey(env.RULESET_ID), currentHash);
             
             try {
                 console.log('Attempting to send alert...');
@@ -191,10 +198,14 @@ export default {
                 };
 
                 try {
+                    if (!env.CUSTOM_RULE_ID) {
+                        throw new Error('CUSTOM_RULE_ID environment variable is not configured for blocking ruleset');
+                    }
+
                     console.log('Creating blocking rule for JA4s:', ja4List);
                     console.log('Blocking expression:', blockRule.expression);
                     
-                    const blockResponse = await fetch(`https://api.cloudflare.com/client/v4/zones/${env.ZONE_ID}/rulesets/5ccf5cb808fe45b0ad6aec3a47cb7c38/rules`, {
+                    const blockResponse = await fetch(`https://api.cloudflare.com/client/v4/zones/${env.ZONE_ID}/rulesets/${env.CUSTOM_RULE_ID}/rules`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${env.API_TOKEN}`,
