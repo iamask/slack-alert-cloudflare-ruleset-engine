@@ -17,7 +17,7 @@
 		}
 	  ],
   "vars": {
-    "AUTO_BLOCK": true,
+    "AUTO_BLOCK": false,
   },
   "triggers": {
 	"crons": [
