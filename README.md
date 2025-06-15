@@ -37,7 +37,7 @@ If you prefer to deploy manually:
 4. Update `wrangler.jsonc` with your configuration:
    ```jsonc
    {
-   	"name": "alert-action-automation",
+   	"name": "worker-name",
    	"main": "src/index.js",
    	"compatibility_date": "2025-06-10",
    	"kv_namespaces": [
