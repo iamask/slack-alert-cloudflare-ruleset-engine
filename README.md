@@ -18,7 +18,9 @@ A Cloudflare Worker that monitors Security events/ Rulesets and automatically bl
 
 Simply click the "Deploy to Cloudflare" button above to deploy this worker to your Cloudflare account.
 
-Update Environments and secrets ![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
+Update Environments and secrets
+
+![Screenshot](https://r2.zxc.co.in/git_readme/slack-alert-dash.png)
 
 ### Option 2: Manual Deployment
 
