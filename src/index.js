@@ -46,6 +46,7 @@ const getStateKey = (rulesetId) => `state_${rulesetId}`;
 const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 32);
 
 // Send alert to Slack
+// Slack has string length limits, so we need to truncate the events data in graphql query like top 3
 const sendAlert = async (events, zoneTag, env) => {
     const message = {
         text: `🚨 DDoS Events Detected on ${zoneTag}`,
@@ -70,28 +71,18 @@ const sendAlert = async (events, zoneTag, env) => {
     try {
         const response = await fetch(env.SLACK_WEBHOOK_URL, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(message)
         });
 
         if (!response.ok) {
-            const responseText = await response.text();
-           // console.error('Slack API error response:', responseText);
-            throw new Error(`Slack webhook failed with status: ${response.status}, response: ${responseText}`);
+            throw new Error(`Slack webhook failed: ${response.status}`);
         }
-        console.log('Alert sent successfully to Slack');
     } catch (error) {
-        console.error('Failed to send alert to Slack:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack
-        });
-        throw error; // Re-throw to handle in the calling function
+        throw new Error(`Failed to send Slack alert: ${error.message}`);
     }
 };
-
+//ruleId_like is optional, if not provided, all rules within the ruleset will be checked
 export default {
     async scheduled(request, env, ctx) {
         console.log('Worker scheduled event triggered at:', new Date().toISOString());
