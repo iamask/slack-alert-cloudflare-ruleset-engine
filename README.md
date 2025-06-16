@@ -96,6 +96,8 @@ If you prefer to deploy manually:
    - Cloudflare Dashboard > Workers > Your Worker > Variables
    - Or using Wrangler secrets:
      ```bash
+     wrangler secret bulk .env.vars
+     or
      wrangler secret put API_TOKEN
      wrangler secret put SLACK_WEBHOOK_URL
      # ... repeat for other sensitive variables

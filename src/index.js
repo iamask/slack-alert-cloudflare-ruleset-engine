@@ -15,8 +15,7 @@ const getTimeWindow = () => {
 const validateEnv = (env) => {
     const requiredVars = {
         'API_TOKEN': 'Cloudflare API Token',
-        'ZONE_TAG': 'Zone Tag',
-        'ZONE_ID': 'Zone ID',
+        'ZONE_ID': 'Zone Tag (Zone Name)',
         'RULESET_ID': 'Ruleset ID for monitoring',
         'SLACK_WEBHOOK_URL': 'Slack Webhook URL'
     };
@@ -95,7 +94,7 @@ export default {
             const query = `
                 query Viewer {
                     viewer {
-                        zones(filter: { zoneTag: "${env.ZONE_TAG}" }, limit: 1) {
+                        zones(filter: { zoneTag: "${env.ZONE_ID}" }, limit: 1) {
                             zoneTag
                             firewallEventsAdaptiveGroups(
                                 filter: {
@@ -166,7 +165,7 @@ export default {
 			console.log('New events processed');
             
             try {
-                await sendAlert(events, env.ZONE_TAG, env);
+                await sendAlert(events, env.ZONE_ID, env);
             } catch (error) {
                 console.error('Failed to send alert:', error);
                 // Continue processing even if alert fails
@@ -261,3 +260,6 @@ export default {
         }
     },
 };
+
+
+//test
