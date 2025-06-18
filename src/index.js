@@ -13,7 +13,7 @@ const validateEnv = (env) => {
     const requiredVars = {
         'API_TOKEN': 'Cloudflare API Token',
         'ACCOUNT_ID': 'Account Tag (Account ID)',
-        'RULESET_ID': 'Ruleset ID for monitoring',
+        'RULESET_ID': 'Default HTTP DDPS Ruleset ID',
         'SLACK_WEBHOOK_URL': 'Slack Webhook URL'
     };
 
@@ -23,7 +23,6 @@ const validateEnv = (env) => {
             missingVars.push(`${varName} (${description})`);
         }
     }
-
 
     if (missingVars.length > 0) {
         throw new Error(`Missing required environment variables:${missingVars.join('\n')}`);
@@ -72,9 +71,9 @@ const sendAlert = async (events, accountTag, env) => {
     }
 };
 
+// Pages
 export default {
     async scheduled(request, env, ctx) {
-
         try {
             validateEnv(env);
             const timeWindow = getTimeWindow();
@@ -83,7 +82,7 @@ export default {
                     viewer {
                         accounts(filter: { accountTag: "${env.ACCOUNT_ID}" }) {
                             accountTag
-                            firewallEventsAdaptive(
+                            firewallEventsAdaptiveGroups(
                                 filter: {
                                     datetime_geq: "${timeWindow.start}"
                                     datetime_leq: "${timeWindow.end}"
@@ -92,16 +91,20 @@ export default {
                                         { ruleId_like: "${env.RULESET_ID}" }
                                     ]
                                 }
+                                orderBy: [count_DESC]
                                 limit: 5
                             ) {
-                                description
-                                clientCountryName
-                                clientAsn
-                                clientIP
-                                ja4
-                                clientRequestPath
-                                clientRequestHTTPHost
-                                botDetectionTags
+                                count
+                                dimensions {
+                                    description
+                                    clientCountryName
+                                    clientAsn
+                                    clientIP
+                                    ja4
+                                    clientRequestPath
+                                    clientRequestHTTPHost
+                                    botDetectionTags
+                                }
                             }
                         }
                     }
@@ -130,7 +133,7 @@ export default {
                 throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
             }
 
-            const events = data.data?.viewer?.accounts[0]?.firewallEventsAdaptive || [];
+            const events = data.data?.viewer?.accounts[0]?.firewallEventsAdaptiveGroups || [];
             console.log(`Found ${events.length} events`);
 
             if (events.length === 0) {
@@ -147,7 +150,7 @@ export default {
 
             // Process new events
             await env.ALERTS_KV.put("DdosAlertState", currentHash);
-			console.log('New events processed');
+            console.log('New events processed');
             
             try {
                 await sendAlert(events, env.ACCOUNT_ID, env);
@@ -156,7 +159,6 @@ export default {
                 console.error('Failed to send alert:', error);
                 // Continue processing even if alert fails
             }
-
 
         } catch (error) {
             console.log(JSON.stringify({
