@@ -32,7 +32,7 @@ const validateEnv = (env) => {
 };
 
 // KV Key for state comparison
-const getStateKey = (rulesetId) => `state_${rulesetId}`;
+const STATE_KEY = "DdosAlertState";
 
 // Simple hash function for state comparison
 const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 32);
@@ -140,7 +140,7 @@ export default {
             }
 
             // Check if we need to process these events
-            const previousHash = await env.ALERTS_KV.get(getStateKey(env.RULESET_ID));
+            const previousHash = await env.ALERTS_KV.get(STATE_KEY);
             const currentHash = getSimpleHash(events);
             
             if (previousHash === currentHash) {
@@ -148,7 +148,7 @@ export default {
             }
 
             // Process new events
-            await env.ALERTS_KV.put(getStateKey(env.RULESET_ID), currentHash);
+            await env.ALERTS_KV.put(STATE_KEY, currentHash);
 			console.log('New events processed');
             
             try {
