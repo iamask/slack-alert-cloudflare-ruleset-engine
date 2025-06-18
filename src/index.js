@@ -145,8 +145,13 @@ export default {
             const previousHash = await env.ALERTS_KV.get("DdosAlertState");
             const currentHash = getSimpleHash(events);
             
+            console.log('Previous hash:', previousHash);
+            console.log('Current hash:', currentHash);
+            console.log('Hash comparison result:', previousHash === currentHash);
+            
             if (previousHash === currentHash) {
                 console.log(JSON.stringify({ status: 'success', message: 'No new events' }));
+                return; // Add return to prevent further processing
             }
 
             // Process new events
