@@ -1,14 +1,13 @@
 # Alert Action Automation
 
-A Cloudflare Worker that monitors Security events/ Rulesets and automatically blocks malicious JA4 fingerprints.
+A Cloudflare Worker that monitors Security events/ Rulesets and sends alerts to Slack when events are detected.
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/iamask/slack-alert-cloudflare-ruleset-engine)
 
 ## Features
 
-- Monitors Security events using Cloudflare's GraphQL API
+- Monitors Security events using Cloudflare's GraphQL API at account level
 - Sends alerts to Slack when events are detected
-- Automatically blocks malicious JA4 fingerprints (optional)
 - State management using KV to prevent duplicate alerts
 - Configurable through environment variables and secrets
 
@@ -80,16 +79,9 @@ If you prefer to deploy manually:
    **Required Variables:**
 
    - `API_TOKEN`: Your Cloudflare API Token
-   - `ZONE_TAG`: Your Cloudflare Zone Tag
-   - `ZONE_ID`: Your Cloudflare Zone ID
+   - `ACCOUNT_ID`: Your Cloudflare Account Tag (Account ID)
    - `RULESET_ID`: Ruleset ID for monitoring
    - `SLACK_WEBHOOK_URL`: Your Slack Webhook URL
-
-   **Optional Variables:**
-
-   - `AUTO_BLOCK`: Set to `true` to enable automatic blocking
-   - `CUSTOM_RULE_ID`: Required when `AUTO_BLOCK` is enabled
-   - `RULE_ID`: Optional rule ID to filter events
 
    Configure these in either:
 
@@ -116,9 +108,6 @@ If you prefer to deploy manually:
    			"id": "your-kv-namespace-id" // Use the ID from step 3
    		}
    	],
-   	"vars": {
-   		"AUTO_BLOCK": false // Set to true to enable automatic blocking
-   	},
    	"triggers": {
    		"crons": [
    			"*/30 * * * *" // Runs every 30 minutes
@@ -134,20 +123,20 @@ If you prefer to deploy manually:
 
 ## How It Works
 
-1. The worker runs every 30 minutes (configurable via cron trigger)
-2. It queries the last 24 hours of firewall events using Cloudflare's GraphQL API
-3. When new events are detected:
+1. The worker runs every 30 minutes (configurable via cron trigger) // configurables
+2. It queries the last 24 hours of firewall events using Cloudflare's GraphQL API at account level
+3. The query filters for events matching:
+   - Override rule name containing "pages%"
+   - OR specific rule ID (configurable via RULESET_ID)
+4. When new events are detected:
    - Sends an alert to Slack with event details
-   - If AUTO_BLOCK is enabled, identifies the top 3 malicious JA4 fingerprints
-   - Creates a blocking rule for the identified JA4 fingerprints
-4. Uses KV to maintain state and prevent duplicate alerts
+   - Uses KV to maintain state and prevent duplicate alerts
 
 ## Security Considerations
 
 - The worker requires appropriate API token permissions
-- Automatic blocking can be disabled by setting `AUTO_BLOCK` to false
-- Blocking rules are created with a 403 response and JSON error message
 - All sensitive operations are logged for audit purposes
+- Events are filtered to focus on specific security patterns
 
 ## Alert Format
 
