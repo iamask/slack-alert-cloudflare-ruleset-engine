@@ -35,7 +35,8 @@ const validateEnv = (env) => {
 const STATE_KEY = "DdosAlertState";
 
 // Simple hash function for state comparison
-const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 32);
+// use 128 characters of the base64 encoded string
+const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 128);
 
 // Send alert to Slack
 // Slack has string length limits, so we need to truncate the events data in graphql query like top 3
