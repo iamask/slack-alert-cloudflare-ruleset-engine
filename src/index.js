@@ -153,6 +153,7 @@ export default {
             
             try {
                 await sendAlert(events, env.ACCOUNT_ID, env);
+                console.log('Alert sent successfully to Slack');
             } catch (error) {
                 console.error('Failed to send alert:', error);
                 // Continue processing even if alert fails
