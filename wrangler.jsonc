@@ -16,9 +16,7 @@
 		  "id": "13efac877fd742638f522179e0c501e9"
 		}
 	  ],
-  "vars": {
-    "AUTO_BLOCK": false,
-  },
+  
   "triggers": {
 	"crons": [
 	  "*/30 * * * *"
