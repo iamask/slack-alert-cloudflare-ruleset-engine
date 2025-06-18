@@ -31,9 +31,6 @@ const validateEnv = (env) => {
     console.log('Environment validation completed successfully');
 };
 
-// KV Key for state comparison
-const STATE_KEY = "DdosAlertState";
-
 // Simple hash function for state comparison
 // use 128 characters of the base64 encoded string
 const getSimpleHash = (data) => btoa(JSON.stringify(data)).slice(0, 128);
@@ -141,7 +138,7 @@ export default {
             }
 
             // Check if we need to process these events
-            const previousHash = await env.ALERTS_KV.get(STATE_KEY);
+            const previousHash = await env.ALERTS_KV.get("DdosAlertState");
             const currentHash = getSimpleHash(events);
             
             if (previousHash === currentHash) {
@@ -149,7 +146,7 @@ export default {
             }
 
             // Process new events
-            await env.ALERTS_KV.put(STATE_KEY, currentHash);
+            await env.ALERTS_KV.put("DdosAlertState", currentHash);
 			console.log('New events processed');
             
             try {
