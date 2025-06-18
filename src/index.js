@@ -1,6 +1,3 @@
-// update variables in .env.vars file and wrangler.jsonc. or dashboard > 'Variables and Secrets'
-// The Block functionality is controlled by the AUTO_BLOCK flag 
-
 // Get time window for last 24 hours
 const getTimeWindow = () => {
     const now = new Date();
