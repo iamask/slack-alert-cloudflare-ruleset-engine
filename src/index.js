@@ -71,7 +71,8 @@ const sendAlert = async (events, accountTag, env) => {
     }
 };
 
-// Pages
+// here all my DDoS override rule names starts with "page%" ; % is a wildcard
+// DDoS override rules cannot be filtered by ruleId_like, so we need to filter by description_like which is easier to implement
 export default {
     async scheduled(request, env, ctx) {
         try {
