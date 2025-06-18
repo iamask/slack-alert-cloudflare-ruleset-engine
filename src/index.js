@@ -91,7 +91,7 @@ export default {
                             firewallEventsAdaptive(
                                 filter: {
                                     datetime_geq: "${timeWindow.start}"
-                                    datetime_leq: "${timeWindow.end}""
+                                    datetime_leq: "${timeWindow.end}"
                                     OR: [
                                         { description_like: "pages%" }
                                         { ruleId_like: "${env.RULESET_ID}" }
