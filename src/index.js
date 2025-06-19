@@ -1,4 +1,4 @@
-// Get time window for last 24 hours
+// Get time window for last 24 hours...
 const getTimeWindow = () => {
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
