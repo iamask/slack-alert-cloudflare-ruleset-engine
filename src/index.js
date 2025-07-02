@@ -89,7 +89,7 @@ export default {
                                     datetime_leq: "${timeWindow.end}"
                                     OR: [
                                         { description_like: "pages%" }
-                                        { ruleId_like: "${env.RULESET_ID}" }
+                                        { rulesetId_like: "${env.RULESET_ID}" }
                                     ]
                                 }
                                 orderBy: [count_DESC]
@@ -129,6 +129,7 @@ export default {
 
             const data = await response.json();
             console.log('GraphQL response received');
+            console.log('GraphQL response data:', JSON.stringify(data, null, 2));
             
             if (data.errors) {
                 throw new Error(`GraphQL errors: ${JSON.stringify(data.errors)}`);
